@@ -37,14 +37,20 @@ async function processRequest(prompt){
             JOIN department AS d ON r.department = d.id 
             LEFT JOIN employee AS e2 ON e.manager_id = e2.id `) //completes JOINs on all tables to combine info
             console.table(employees.rows)
+            getUserInput()
+            .then(processRequest)
         break;
         case 'View All Roles':
             const roles = await client.query('SELECT r.id, r.title, r.salary, d.name AS department FROM role AS r JOIN department AS d ON r.department = d.id')
             console.table(roles.rows)
+            getUserInput()
+            .then(processRequest)
         break;
         case 'View All Departments':
             const departments = await client.query('SELECT * FROM department')
             console.table(departments.rows)
+            getUserInput()
+            .then(processRequest)
         break;
         case 'Add Employee':
             const employeePrompt = await inquirer.prompt([
@@ -79,7 +85,8 @@ async function processRequest(prompt){
             await client.query('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ($1,$2, $3, $4)',
             [employeePrompt.first_name, employeePrompt.last_name, roleID, firstID.rows[0].id]) //insert the new employee
             console.log('Added', employeePrompt.first_name, employeePrompt.last_name, 'to the database.')
-    
+            getUserInput()
+            .then(processRequest)
         break;
         case 'Add Role':
             const rolePrompt = await inquirer.prompt([
@@ -104,6 +111,8 @@ async function processRequest(prompt){
             const deptID =  deptIDQuery.rows[0].id //finds department id from name
             await client.query('INSERT INTO role (title, salary, department) VALUES ($1, $2, $3)', [rolePrompt.title, rolePrompt.salary, deptID])
             console.log('Added', rolePrompt.title, 'to the database.')
+            getUserInput()
+            .then(processRequest)
         break;
         case 'Add Department':
             const deptPrompt = await inquirer.prompt([
@@ -115,6 +124,8 @@ async function processRequest(prompt){
             ])
             await client.query('INSERT INTO department (name) VALUES ($1)', [deptPrompt.title])
             console.log('Added', deptPrompt.title, 'to the database.')
+            getUserInput()
+            .then(processRequest)
         break;
         case 'Update Employee Role':
             const updatePrompt = await inquirer.prompt([
@@ -137,9 +148,11 @@ async function processRequest(prompt){
             const roleIDQuery = await client.query('SELECT id FROM role WHERE title = ($1)', [updatePrompt.newRole]) //gets id of role from title
             await client.query('UPDATE employee SET role_id = ($1) WHERE id = ($2)',[roleIDQuery.rows[0].id, firstNameID.rows[0].id])
             console.log('Updated employee role.')
+            getUserInput()
+            .then(processRequest)
         break;
         default:
-            break;
+            process.exit()
     }
 }
 
@@ -168,7 +181,6 @@ async function run(){
     .catch ((err) =>{
         console.log(err)
     })
-    client.end()
 }
 
 run()
