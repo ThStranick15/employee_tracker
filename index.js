@@ -1,6 +1,5 @@
 const inquirer = require('inquirer')
 const table = require('console.table')
-//const {getEmployees} = require('./queries.js')
 
 const {Client} = require('pg')
 const client = new Client({
